@@ -9,7 +9,7 @@ import { matchAndAggregate } from './utils/matchAndAggregate'
 import { exportResultsCsv } from './utils/exportResultsCsv'
 import { saveRun, loadRuns, clearRuns, type RunEntry } from './utils/runHistory'
 import { scrapeTab } from './utils/scrapeTab'
-import type { CsvRow, MatchedResult } from '../types'
+import type { CsvRow, MatchedResult, PaymentEntry } from '../types'
 
 type AppState = 'idle' | 'csv_loaded' | 'scraping' | 'results' | 'error'
 type Tab = 'main' | 'history'
@@ -47,6 +47,7 @@ export function App() {
   const [fromDate, setFromDate] = useState(defaultFrom)
   const [toDate, setToDate] = useState(defaultTo)
   const [resultData, setResultData] = useState<ResultData | null>(null)
+  const [seenPayments, setSeenPayments] = useState<PaymentEntry[]>([])
   const [errorMsg, setErrorMsg] = useState('')
   const [runs, setRuns] = useState<RunEntry[]>([])
 
@@ -102,7 +103,46 @@ export function App() {
       const toISO = toDate ? new Date(toDate).toISOString() : ''
 
       const payments = await scrapeTab(tab.id, autoScroll, fromISO, toISO)
+      setSeenPayments(payments)
       const { results, unmatched } = matchAndAggregate(payments, csvRows)
+
+      await saveRun({ fromFilter: fromDate, toFilter: toDate, results, unmatched })
+      setRuns(await loadRuns())
+
+      setResultData({ results, unmatched })
+      setState('results')
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Unknown error occurred.')
+      setState('error')
+    }
+  }
+
+  async function handleRefresh() {
+    setState('scraping')
+    setErrorMsg('')
+
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+      if (!tab?.id) throw new Error('No active tab found.')
+      if (!tab.url?.startsWith('https://mail.google.com/mail')) {
+        throw new Error('Please navigate to https://mail.google.com/mail and try again.')
+      }
+
+      const fromISO = fromDate ? new Date(fromDate).toISOString() : ''
+      const toISO = toDate ? new Date(toDate).toISOString() : ''
+
+      const fresh = await scrapeTab(tab.id, autoScroll, fromISO, toISO)
+
+      const existingKeys = new Set(
+        seenPayments.map((p) => `${p.platform}|${p.payerName}|${p.amount}|${p.timestamp}`)
+      )
+      const merged = [
+        ...seenPayments,
+        ...fresh.filter((p) => !existingKeys.has(`${p.platform}|${p.payerName}|${p.amount}|${p.timestamp}`)),
+      ]
+      setSeenPayments(merged)
+
+      const { results, unmatched } = matchAndAggregate(merged, csvRows)
 
       await saveRun({ fromFilter: fromDate, toFilter: toDate, results, unmatched })
       setRuns(await loadRuns())
@@ -117,6 +157,7 @@ export function App() {
 
   function handleStartOver() {
     setResultData(null)
+    setSeenPayments([])
     setErrorMsg('')
     setState(csvRows.length > 0 ? 'csv_loaded' : 'idle')
   }
@@ -220,6 +261,7 @@ export function App() {
                 <button className="btn-success" onClick={() => exportResultsCsv(resultData.results)} disabled={resultData.results.length === 0}>
                   Export CSV
                 </button>
+                <button className="btn-secondary" onClick={handleRefresh}>Refresh</button>
                 <button className="btn-secondary" onClick={handleStartOver}>Start Over</button>
               </div>
               <ResultsTable results={resultData.results} />
