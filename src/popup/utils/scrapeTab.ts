@@ -7,9 +7,9 @@ async function _scrapeGmailPayments(
   fromISO: string,
   toISO: string
 ): Promise<Array<{ payerName: string; amount: number; timestamp: string; platform: string }>> {
-  const ROW_SEL = 'tr.zA'
-  const SENDER_SEL = 'span.zF'
-  const SUBJECT_SEL = 'span.bqe'
+  const ROW_SEL = 'tr:has(span[email])'
+  const SENDER_SEL = 'span[email]'
+  const SUBJECT_SEL = 'span.bqe, span.bog'
   const TIME_SEL = 'td.xW span[title]'
 
   const fromMs = fromISO ? new Date(fromISO).getTime() : 0
