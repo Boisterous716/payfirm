@@ -1,27 +1,38 @@
 # Payfirm
 
-A Chrome extension that scans your Gmail inbox for PayPal payment notification emails, matches each payer's real name against an uploaded CSV of Reddit usernames, and exports aggregated totals per person.
+A Chrome extension that scans your Gmail inbox for payment notification emails, matches each payer's real name against an uploaded CSV of Reddit usernames, and exports aggregated totals per person.
 
 ---
 
 ## Table of Contents
 
-1. [Prerequisites](#prerequisites)
-2. [Clone the repository](#clone-the-repository)
-3. [Install dependencies & build](#install-dependencies--build)
-4. [Load the extension in Chrome](#load-the-extension-in-chrome)
-5. [Prepare your CSV](#prepare-your-csv)
-6. [Using the extension](#using-the-extension)
-7. [Supported platforms](#supported-platforms)
-8. [Development commands](#development-commands)
-9. [Troubleshooting](#troubleshooting)
-10. [Project structure](#project-structure)
+1. [Quick install (no dev environment needed)](#quick-install-no-dev-environment-needed)
+2. [Install from source](#install-from-source)
+3. [Load the extension in Chrome](#load-the-extension-in-chrome)
+4. [Prepare your CSV](#prepare-your-csv)
+5. [Using the extension](#using-the-extension)
+6. [Supported platforms](#supported-platforms)
+7. [Development commands](#development-commands)
+8. [Troubleshooting](#troubleshooting)
+9. [Project structure](#project-structure)
 
 ---
 
-## Prerequisites
+## Quick install (no dev environment needed)
 
-Before you begin, make sure you have the following installed:
+1. Go to the [Releases page](https://github.com/Boisterous716/payfirm/releases) and download the latest `payfirm-dist.zip`
+2. Unzip it anywhere on your computer
+3. Follow the [Load the extension in Chrome](#load-the-extension-in-chrome) steps below, selecting the unzipped folder
+
+That's it — no Node.js, no terminal, no build step required.
+
+---
+
+## Install from source
+
+If you want to build from source or contribute to development.
+
+**Prerequisites:**
 
 | Requirement | Version | Download |
 |-------------|---------|----------|
@@ -29,67 +40,16 @@ Before you begin, make sure you have the following installed:
 | Node.js | 18 or higher | [nodejs.org](https://nodejs.org) — choose the **LTS** release |
 | Git | Any | [git-scm.com](https://git-scm.com) |
 
-To verify Node.js is installed, open a terminal and run:
-
 ```bash
-node --version   # should print v18.x.x or higher
-npm --version    # should print 9.x.x or higher
-```
-
----
-
-## Clone the repository
-
-```bash
-git clone https://github.com/your-org/payfirm.git
+git clone https://github.com/Boisterous716/payfirm.git
 cd payfirm
-```
-
-> Replace the URL above with the actual repository URL.
-
----
-
-## Install dependencies & build
-
-### macOS
-
-Open **Terminal** and run:
-
-```bash
-# Install project dependencies
 npm install
-
-# Build the extension — output goes to the dist/ folder
 npm run build
-```
-
-> **Node.js not installed?** Install it via Homebrew:
-> ```bash
-> brew install node
-> ```
-> Then re-run the commands above.
-
-### Windows
-
-Open **Command Prompt** or **PowerShell** and run:
-
-```powershell
-# Install project dependencies
-npm install
-
-# Build the extension — output goes to the dist\ folder
-npm run build
-```
-
-> **Node.js not installed?** Download and run the LTS installer from [nodejs.org](https://nodejs.org), restart your terminal, then re-run the commands above.
-
-When the build succeeds you will see output ending with:
-
-```
-✓ built in Xms
 ```
 
 The compiled extension is now in the `dist/` folder.
+
+> **After any code change:** run `npm run build` again, then go to `chrome://extensions` and click the **↺ refresh** icon on the Payfirm card.
 
 ---
 
@@ -98,16 +58,14 @@ The compiled extension is now in the `dist/` folder.
 1. Open Chrome and navigate to `chrome://extensions`
 2. Enable **Developer mode** using the toggle in the **top-right corner**
 3. Click **Load unpacked**
-4. In the file picker, navigate to the `payfirm` project folder and select the **`dist`** subfolder
+4. Select the `dist` folder (from the unzipped release, or from your build output)
 5. Payfirm appears in your extension list
 
-**Pin the extension to your toolbar** (recommended):
+**Pin the extension to your toolbar:**
 
-1. Click the puzzle-piece icon (🧩) in the Chrome toolbar
+1. Click the puzzle-piece icon in the Chrome toolbar
 2. Find **Payfirm** and click the pin icon next to it
-3. The Payfirm icon now appears permanently in the toolbar for easy access
-
-> **After any code change:** run `npm run build` again, then go to `chrome://extensions` and click the **↺ refresh** icon on the Payfirm card.
+3. The Payfirm icon now appears permanently in the toolbar
 
 ---
 
@@ -135,31 +93,37 @@ Save this file with a `.csv` extension. Extra columns are ignored.
 
 ## Using the extension
 
+### Opening Payfirm
+
+Click the **Payfirm** icon in your Chrome toolbar. The extension opens as a **side panel** on the right side of your browser — it stays open even when you click elsewhere on the page.
+
 ### First-time setup
 
-1. Open Gmail in Chrome at `https://mail.google.com/mail` and make sure you can see your inbox
-2. Click the **Payfirm** icon in your Chrome toolbar
+1. Open Gmail in Chrome at `https://mail.google.com/mail`
+2. Click the **Payfirm** icon to open the side panel
 3. Click **Upload CSV** and select your Reddit username CSV file
    - The CSV is cached locally — you will not need to re-upload it on future sessions
-4. If you want to re-upload a different CSV, click **Upload CSV** again or **Clear CSV** to start fresh
+4. To switch to a different CSV, click **Upload CSV** again or **Clear CSV** to start fresh
 
 ### Running a match
 
-1. Navigate to Gmail (`https://mail.google.com/mail`) — Payfirm **must** be run from an active Gmail tab
-2. Click the **Payfirm** toolbar icon
-3. Set the **From** and **To** datetime filters to the period you want to scan
-   - Defaults to the last 7 days
-4. *(Optional)* Check **Auto-scroll to load all emails** if your inbox has many pages — this is slower but ensures all emails in the date range are captured
-5. Click **Match Payments**
-6. Results appear in a table showing:
+1. Make sure Gmail is your active tab (`https://mail.google.com/mail`)
+2. Set the **From** and **To** datetime filters to the period you want to scan (defaults to the last 7 days)
+3. *(Optional)* Check **Auto-scroll to load all emails** if your inbox has many pages — this is slower but ensures all emails in the date range are captured
+4. Click **Match Payments**
+5. Results appear in a table showing:
    - Reddit username
    - Full name
    - Payment platform(s)
    - Total amount (USD)
    - Number of payments
    - A **Total** row at the bottom
-7. Any payer names that couldn't be matched to your CSV appear in the **Unmatched Payers** section — add them to your CSV and re-run if needed
-8. Click **Export CSV** to download the results as a `.csv` file
+6. Any payer names that couldn't be matched appear in the **Unmatched Payers** section — add them to your CSV and re-run if needed
+7. Click **Export CSV** to download the results as a `.csv` file
+
+### Refreshing without starting over
+
+If new payment emails arrive while the side panel is open, click **Refresh** instead of starting over. Payfirm re-scans Gmail and adds any newly detected payments to the existing results — already-counted payments are never duplicated.
 
 ### Viewing history
 
@@ -171,9 +135,9 @@ Every successful run is automatically saved. Click the **History** tab to see al
 
 | Platform | Status | Detected by |
 |----------|--------|-------------|
-| PayPal | ✅ Fully implemented | Emails from `*@paypal.com` |
-| Venmo | 🚧 Coming soon | Emails from `*@venmo.com` |
-| Wise | 🚧 Coming soon | Emails from `*@wise.com` / `*@transferwise.com` |
+| PayPal | ✅ Supported | Emails from `*@paypal.com` |
+| Venmo | ✅ Supported | Emails from `*@venmo.com` |
+| Wise | ✅ Supported | Emails from `*@wise.com` / `*@transferwise.com` |
 
 The extension automatically identifies the payment platform from the sender email address — no configuration required.
 
@@ -185,7 +149,7 @@ The extension automatically identifies the payment platform from the sender emai
 |---------|-------------|
 | `npm install` | Install all dependencies |
 | `npm run build` | Build the extension into `dist/` |
-| `npm run dev` | Start Vite dev server (for popup UI development only) |
+| `npm run dev` | Start Vite dev server (for UI development only) |
 | `npm test` | Run unit tests in watch mode |
 | `npm run test:run` | Run unit tests once and exit |
 
@@ -194,17 +158,17 @@ The extension automatically identifies the payment platform from the sender emai
 ## Troubleshooting
 
 **"Please navigate to https://mail.google.com/mail and try again"**
-The active tab must be a Gmail tab when you click Match Payments. Switch to your Gmail tab first, then click the extension icon.
+The active tab must be a Gmail tab when you click Match Payments. Switch to your Gmail tab first, then click Match Payments.
 
 **"Could not establish connection" or "Scraping returned no data"**
-- Make sure you are on the Gmail inbox page (not a specific email thread or Settings)
+- Make sure you are on the Gmail inbox page (not inside a specific email thread or Settings)
 - Try reloading the Gmail tab, then click Match Payments again
-- If the issue persists, go to `chrome://extensions`, find Payfirm, and click **↺ refresh**, then reload Gmail
+- If the issue persists, go to `chrome://extensions`, find Payfirm, click **↺ refresh**, then reload Gmail
 
 **Zero results after a successful scrape**
 - Your payer names may not match any entries in your CSV — check the **Unmatched Payers** list
 - The date filter may be too narrow — widen the From/To range and try again
-- PayPal email subjects must match the format `{Name} sent you $X.XX USD` — if PayPal has changed their email template, update `tryPayPal()` in `src/popup/utils/scrapeTab.ts`
+- Make sure both read and unread payment emails are visible in your Gmail inbox view
 
 **CSV upload error**
 - Ensure your file is saved as plain `.csv` (not `.xlsx`)
@@ -212,7 +176,7 @@ The active tab must be a Gmail tab when you click Match Payments. Switch to your
 - Open the file in a text editor to confirm it is comma-separated and has a header row
 
 **Extension not appearing after Load unpacked**
-- Make sure you selected the `dist/` folder, not the root project folder
+- Make sure you selected the `dist/` folder (or the unzipped release folder), not the root project folder
 - Confirm the build completed without errors by checking the terminal output
 
 ---
@@ -222,7 +186,7 @@ The active tab must be a Gmail tab when you click Match Payments. Switch to your
 ```
 payfirm/
 ├── manifest.json                   Chrome Extension manifest (MV3)
-├── index.html                      Popup HTML entry point
+├── index.html                      Side panel HTML entry point
 ├── vite.config.ts                  Vite + @crxjs build config
 ├── vitest.config.ts                Unit test config
 ├── package.json
@@ -236,13 +200,13 @@ payfirm/
     ├── types/
     │   └── index.ts                Shared TypeScript types
     ├── background/
-    │   └── service-worker.ts       MV3 service worker stub (required by manifest)
+    │   └── service-worker.ts       Opens side panel when extension icon is clicked
     ├── test/
     │   └── setup.ts                Vitest global setup + chrome API mock
     └── popup/
         ├── main.tsx                React entry point
         ├── App.tsx                 Top-level state machine
-        ├── App.css                 Popup styles
+        ├── App.css                 Side panel styles
         ├── components/
         │   ├── CsvUploader.tsx     File input + PapaParse trigger
         │   ├── HistoryView.tsx     Collapsible past-run list
