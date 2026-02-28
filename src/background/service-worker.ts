@@ -1,4 +1,5 @@
-// MV3 service worker stub — required by manifest
-// No relay logic needed: popup communicates directly with content script
+chrome.action.onClicked.addListener((tab) => {
+  chrome.sidePanel.open({ tabId: tab.id! });
+});
 
 export {}

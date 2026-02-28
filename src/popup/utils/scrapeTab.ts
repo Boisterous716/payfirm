@@ -17,7 +17,7 @@ async function _scrapeGmailPayments(
 
   // ── PayPal ──────────────────────────────────────────────────────────────────
   // Email: service@paypal.com
-  // Subject: "Sean Lum sent you $20.00 USD"
+  // Subject: "John Apple sent you $20.00 USD"
   function tryPayPal(subject: string): { payerName: string; amount: number } | null {
     const m = /^(.+?)\s+sent\s+you\s+\$([0-9,]+(?:\.\d+)?)\s*USD/i.exec(subject)
     if (!m) return null
@@ -73,6 +73,7 @@ async function _scrapeGmailPayments(
   function scrapeRows(): Array<{ payerName: string; amount: number; timestamp: string; platform: string }> {
     const rows = Array.from(document.querySelectorAll(ROW_SEL))
     const payments: Array<{ payerName: string; amount: number; timestamp: string; platform: string }> = []
+    const seen = new Set<string>()
 
     for (const row of rows) {
       const senderEl = row.querySelector(SENDER_SEL)
@@ -93,6 +94,10 @@ async function _scrapeGmailPayments(
         const ms = parsedDate!.getTime()
         if (ms < fromMs || ms > toMs) continue
       }
+
+      const key = `${parsed.platform}|${parsed.payerName}|${parsed.amount}|${timestamp}`
+      if (seen.has(key)) continue
+      seen.add(key)
 
       payments.push({ ...parsed, timestamp })
     }

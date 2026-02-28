@@ -200,7 +200,7 @@ How `matchAndAggregate` links a payer name to a CSV entry.
 
 ```mermaid
 flowchart TD
-    A["payerName from email\ne.g. 'Sean Lum'"] --> N["normalize()\nlowercase · strip punctuation\ncollapse whitespace"]
+    A["payerName from email\ne.g. 'John Apple'"] --> N["normalize()\nlowercase · strip punctuation\ncollapse whitespace"]
     N --> S1{"Strategy 1\nnormalized payer\n=== normalized full_name?"}
     S1 -- Match --> OUT
     S1 -- No match --> S2{"Strategy 2\nnormalized payer\n=== 'last first'?"}
